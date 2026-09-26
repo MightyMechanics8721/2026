@@ -1,9 +1,11 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
+    maven { url = 'https://maven.brott.dev/' }
 }
 
 dependencies {
+    // FTC SDK Dependencies (Updated to v12.0.0)
     implementation 'org.firstinspires.ftc:Inspection:12.0.0'
     implementation 'org.firstinspires.ftc:Blocks:12.0.0'
     implementation 'org.firstinspires.ftc:RobotCore:12.0.0'
@@ -12,6 +14,16 @@ dependencies {
     implementation 'org.firstinspires.ftc:Hardware:12.0.0'
     implementation 'org.firstinspires.ftc:FtcCommon:12.0.0'
     implementation 'org.firstinspires.ftc:Vision:12.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-}
 
+    // AndroidX
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+
+    // Road Runner & FTC Dashboard
+    implementation 'com.acmerobotics.dashboard:dashboard:0.5.0'
+    implementation 'com.acmerobotics.roadrunner:ftc:0.1.23'
+    implementation 'com.acmerobotics.roadrunner:core:1.0.1'
+    implementation 'com.acmerobotics.roadrunner:actions:1.0.1'
+
+    // Linear Algebra Library
+    implementation 'org.ejml:ejml-all:0.44.0'
+}
