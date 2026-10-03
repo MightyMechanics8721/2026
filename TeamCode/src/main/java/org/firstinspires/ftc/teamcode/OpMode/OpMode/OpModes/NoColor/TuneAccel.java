@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.aTeleop.OpModes.NoColor;
+package org.firstinspires.ftc.teamcode.OpMode.OpMode.OpModes.NoColor;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
