@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 
 
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.makePoseVector;
+import static org.firstinspires.ftc.teamcode.Utility.Utils.Utils.makePoseVector;
 
 import androidx.annotation.NonNull;
 
@@ -23,16 +23,13 @@ import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.PoseController;
+import org.firstinspires.ftc.teamcode.Utility.Utils.Controllers.Constants.FFConstants;
+import org.firstinspires.ftc.teamcode.Utility.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Localizers.TwoWheelOdometery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
-import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
+import org.firstinspires.ftc.teamcode.Utility.Utils.Utils;
+import org.firstinspires.ftc.teamcode.Utility.Actuators.DcMotorAdvanced;
 
 
 /**
@@ -52,20 +49,16 @@ public class Drivetrain {
     public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
-    public static double scale = 2;
-    public static SimpleMatrix staticState = new SimpleMatrix(6, 1);
-    public static SimpleMatrix latestState = new SimpleMatrix(6, 1);
-    private static Drivetrain instance;
     public final TwoWheelOdometery twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
     public final DcMotorAdvanced motorLeftBack;
     public final DcMotorAdvanced motorRightBack;
     public final DcMotorAdvanced motorRightFront;
-    private final DrivetrainMotorController motorController;
-    private final GeometricController geometricController;
+    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.DrivetrainMotorController motorController;
+    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.GeometricController geometricController;
     private final SimpleMatrix stopMatrix = new SimpleMatrix(4, 1);
-    private final PoseController poseController;
-    private final PoseController followController;
+    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.PoseController poseController;
+    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.PoseController followController;
     private final MecanumKinematicModel mecanumKinematicModel;
     public SimpleMatrix shootWhileMovingPose;
     public SimpleMatrix driftedPose;
@@ -81,24 +74,24 @@ public class Drivetrain {
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
      * to which name
      */
-    private Drivetrain(HardwareMap hardwareMap) {
+    public Drivetrain(HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
             current = hub.getCurrent(CurrentUnit.MILLIAMPS);
         }
 
-        this.motorController = new DrivetrainMotorController(FF_CONSTANTS);
-        this.poseController = new PoseController(
+        this.motorController = new org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.DrivetrainMotorController(FF_CONSTANTS);
+        this.poseController = new org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.PoseController(
                 POSE_CONSTANTS.xPIDConstants,
                 POSE_CONSTANTS.yPIDConstants,
                 POSE_CONSTANTS.headingPIDConstants
         );
-        this.geometricController = new GeometricController(
+        this.geometricController = new org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.GeometricController(
                 FOLLOWER_CONSTANTS.positionLookahead,
                 FOLLOWER_CONSTANTS.headingLookahead
         );
-        this.followController = new PoseController(
+        this.followController = new org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.PoseController(
                 FOLLOWER_CONSTANTS.xPIDConstants,
                 FOLLOWER_CONSTANTS.yPIDConstants,
                 FOLLOWER_CONSTANTS.headingPIDConstants
@@ -156,18 +149,6 @@ public class Drivetrain {
 
         this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
-
-    public static void initialize(HardwareMap hardwareMap) {
-        instance = new Drivetrain(hardwareMap);
-    }
-
-    public static Drivetrain getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("Drivetrain not initialized!");
-        }
-        return instance;
-    }
-
 
     /**
      * Sets the Position of the bot in its start position.
@@ -235,62 +216,6 @@ public class Drivetrain {
         this.shootWhileMovingPose = shootWhileMovingPose;
     }
 
-    public Action updateStaticState(boolean isOpModeActive) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if (isOpModeActive) {
-                    if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
-                        //Drivetrain.staticState = latestState;
-                        //latestState = state;
-                        Drivetrain.staticState = state;
-                    }
-                }
-                packet.put("cached x", Drivetrain.staticState.get(0, 0));
-                packet.put("cached y", Drivetrain.staticState.get(1, 0));
-                packet.put("cached theta", Drivetrain.staticState.get(2, 0));
-
-                packet.put("real x", state.get(0, 0));
-                packet.put("real y", state.get(1, 0));
-                packet.put("real theta", state.get(2, 0));
-
-                return true;
-            }
-        };
-    }
-
-    public Action updateStaticStateTimed(boolean isOpModeActive, double seconds) {
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                packet.put("autoShootMoving Done", true);
-                if (isOpModeActive && timer.seconds() < seconds) {
-                    if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
-                        //Drivetrain.staticState = latestState;
-                        //latestState = state;
-                        Drivetrain.staticState = state;
-                    }
-
-                    packet.put("cached x", Drivetrain.staticState.get(0, 0));
-                    packet.put("cached y", Drivetrain.staticState.get(1, 0));
-                    packet.put("cached theta", Drivetrain.staticState.get(2, 0));
-
-                    packet.put("real x", state.get(0, 0));
-                    packet.put("real y", state.get(1, 0));
-                    packet.put("real theta", state.get(2, 0));
-                    return true;
-                }
-
-                return false;
-            }
-        };
-    }
 
     private void updateTelemetry() {
         Canvas canvas = packet.fieldOverlay();
@@ -331,40 +256,6 @@ public class Drivetrain {
                         new double[]{
                                 Math.signum(this.state.get(5, 0)) * this.stoppingAngle(
                                         Math.abs(this.state.get(5, 0))
-                                )
-                        }
-                }
-        );
-
-        SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
-                stopDistance, this.state.get(
-                        2,
-                        0
-                )
-        );
-
-        //        this.packet.put("rel. x drift (in)", stopDistance.get(0, 0));
-        //        this.packet.put("rel. y drift (in)", stopDistance.get(1, 0));
-        //        this.packet.put("rel. heading drift (deg)", Math.toDegrees(stopDistance.get(2,
-        //        0)));
-
-        return stopDistanceGlobal;
-    }
-
-    private SimpleMatrix computePreloadDistance() {
-        SimpleMatrix stopDistance = new SimpleMatrix(
-                new double[][]{
-                        new double[]{
-                                Math.signum(this.state.get(3, 0)) * this.stoppingDistanceX(
-                                        scale * Math.abs(this.state.get(3, 0)))
-                        },
-                        new double[]{
-                                Math.signum(this.state.get(4, 0)) * this.stoppingDistanceY(
-                                        scale * Math.abs(this.state.get(4, 0)))
-                        },
-                        new double[]{
-                                Math.signum(this.state.get(5, 0)) * this.stoppingAngle(
-                                        scale * Math.abs(this.state.get(5, 0))
                                 )
                         }
                 }
@@ -741,38 +632,28 @@ public class Drivetrain {
      *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
-    public Action manualControl(double ly, double lx, double rX) {
-        Drivetrain drivetrain = this;
+    public void manualControl(double lx, double ly, double rX) {
+        double y = ly;
+        double x = -lx;
+        double rx = -rX;
 
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                drivetrain.setTelemetry(packet);
-                drivetrain.localize();
-                drivetrain.updateTelemetry();
+        SimpleMatrix compensatedTwist = new SimpleMatrix(
+                new double[][]{
+                        new double[]{MECHANICAL_PARAMETERS.wheelRadius * x},
+                        new double[]{MECHANICAL_PARAMETERS.wheelRadius * y},
+                        new double[]{
+                                (MECHANICAL_PARAMETERS.wheelRadius / (
+                                        MECHANICAL_PARAMETERS.longDistToAxles
+                                                + MECHANICAL_PARAMETERS.latDistToAxles))
+                                        * rx
+                        }
+                }
+        );
 
-                double y = ly;
-                double x = -lx;
-                double rx = -rX;
-                SimpleMatrix compensatedTwist = new SimpleMatrix(
-                        new double[][]{
-                                new double[]{MECHANICAL_PARAMETERS.wheelRadius * x},
-                                new double[]{MECHANICAL_PARAMETERS.wheelRadius * y},
-                                new double[]{
-                                        (MECHANICAL_PARAMETERS.wheelRadius / (
-                                                MECHANICAL_PARAMETERS.longDistToAxles
-                                                        + MECHANICAL_PARAMETERS.latDistToAxles))
-                                                * rx
-                                },
-                                }
-                );
-                double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-                setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                                              .scale(1 / denominator));
-                return false;
-            }
-        };
+        double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+        setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist).scale(1 / denominator));
     }
+
 
     public void setTelemetry(TelemetryPacket packet) {
         this.packet = packet;

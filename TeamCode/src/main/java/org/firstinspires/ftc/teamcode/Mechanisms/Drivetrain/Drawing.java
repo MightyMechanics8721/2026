@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 import com.acmerobotics.dashboard.canvas.Canvas;
 
 import org.ejml.simple.SimpleMatrix;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
 
 public final class Drawing {
     private Drawing() {

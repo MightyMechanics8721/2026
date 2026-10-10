@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Planners.MotionProfile;
+import org.firstinspires.ftc.teamcode.Utility.Utils.Planners.MotionProfile;
 
 import java.util.Arrays;
 

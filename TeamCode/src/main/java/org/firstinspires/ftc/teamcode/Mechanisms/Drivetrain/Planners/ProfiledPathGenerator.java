@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Planners;
 
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.Arrays;
-
 
 public class ProfiledPathGenerator {
     public static double[][] generatePath(SimpleMatrix rawWaypoints) {

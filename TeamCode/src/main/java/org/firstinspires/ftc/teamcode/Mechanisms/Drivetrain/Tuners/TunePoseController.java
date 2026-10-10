@@ -1,4 +1,4 @@
-//package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Tuners;
+//package org.firstinspires.ftc.teamcode.Drivetrain.Tuners;
 //
 //import com.acmerobotics.dashboard.FtcDashboard;
 //import com.acmerobotics.dashboard.config.Config;
@@ -9,7 +9,7 @@
 //
 //import org.ejml.simple.SimpleMatrix;
 //import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
-//import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+//import org.firstinspires.ftc.teamcode.Drivetrain.Drivetrain;
 //
 //@Config
 //@Autonomous(name = "Tune Pose Controller", group = "TeleOp")
