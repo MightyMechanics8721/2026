@@ -30,12 +30,12 @@ public class Robot {
 
 
     public Action manualDrive(
-            double lx, double ly, double ry
+            double lx, double ly, double rx
     ) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                drivetrain.manualControl(lx, ly, ry);
+                drivetrain.manualControl(lx, ly, rx);
 
                 return false;
             }

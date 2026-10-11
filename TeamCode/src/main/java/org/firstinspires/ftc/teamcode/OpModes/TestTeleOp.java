@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.OpModes;
-
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,8 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @TeleOp(name="Testing")
+@Config
 public class TestTeleOp extends LinearOpMode {
-    private Map<String, Action> runningActions = new HashMap<>();
+    public static double shooterSpeed = 250;
+    private Map<String, Action> run = new HashMap<>();
     private FtcDashboard dashboard;
 
     @Override
@@ -26,37 +28,34 @@ public class TestTeleOp extends LinearOpMode {
 
             /**
              * DRIVETRAIN
-             * FIX: Store the action into the map so your loop below executes it.
              */
-            runningActions.put("DRIVETRAIN", robot.manualDrive(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x));
+            run.put("DRIVETRAIN", robot.manualDrive(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x));
 
             /**
              * TRANSFER
-             * FIX: Store the action into the map based on condition.
              */
             if (gamepad1.left_trigger > 0.15) {
-                runningActions.put("TRANSFER", robot.setTransfer(1.0, 1.0));
+                run.put("TRANSFER", robot.setTransfer(1.0, 1.0));
             } else {
-                runningActions.put("TRANSFER", robot.setTransfer(0.0, 0.0));
+                run.put("TRANSFER", robot.setTransfer(0.0, 0.0));
             }
 
             /**
              * SHOOTER
-             * FIX: Store the action into the map based on condition.
              */
             if (gamepad1.right_trigger > 0.15) {
-                runningActions.put("SHOOTER", robot.setShooterMotors(250));
+                run.put("SHOOTER", robot.setShooterMotors(shooterSpeed));
             } else {
-                runningActions.put("SHOOTER", robot.setShooterMotors(0));
+                run.put("SHOOTER", robot.setShooterMotors(0));
             }
 
             HashMap<String, Action> newActions = new HashMap<>();
-            for (Map.Entry<String, Action> entry : runningActions.entrySet()) {
+            for (Map.Entry<String, Action> entry : run.entrySet()) {
                 if (entry.getValue().run(packet)) {
                     newActions.put(entry.getKey(), entry.getValue());
                 }
             }
-            runningActions = newActions;
+            run = newActions;
             dashboard.sendTelemetryPacket(packet);
             telemetry.update();
         }

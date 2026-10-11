@@ -50,17 +50,13 @@ public class ShooterMotors {
 
     /**
      * Returns the current shooter flywheel velocity.
-     *
      * @return the current velocity of the shooter flywheel (rad/sec)
      */
     public double getVelocity() {
         return this.encoder.getVelocity();
     }
 
-    /**
-     *
-     * @param velocity rad/sec
-     */
+    /** @param velocity rad/sec */
     public void setVelocityShooter(double velocity){
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 1);

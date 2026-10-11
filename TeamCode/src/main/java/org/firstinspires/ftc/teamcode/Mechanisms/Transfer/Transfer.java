@@ -23,8 +23,8 @@ public class Transfer {
         this.indexer = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, "i2")
         );
-        this.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-        this.indexer.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.indexer.setDirection(DcMotorSimple.Direction.FORWARD);
     }
     public void setTransferPower(double p1, double p2){
         setIntakePower(p1);

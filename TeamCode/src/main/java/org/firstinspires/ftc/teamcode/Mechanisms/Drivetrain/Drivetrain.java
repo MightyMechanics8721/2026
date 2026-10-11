@@ -633,8 +633,8 @@ public class Drivetrain {
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public void manualControl(double lx, double ly, double rX) {
-        double y = ly;
         double x = -lx;
+        double y = ly;
         double rx = -rX;
 
         SimpleMatrix compensatedTwist = new SimpleMatrix(
