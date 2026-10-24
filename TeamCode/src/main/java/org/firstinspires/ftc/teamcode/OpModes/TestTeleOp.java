@@ -12,7 +12,8 @@ import java.util.Map;
 @TeleOp(name="Testing")
 @Config
 public class TestTeleOp extends LinearOpMode {
-    public static double shooterSpeed = 250;
+    public static double shooterSpeed = 235;
+    public static double transferSpeed = 0.6  ;
     private Map<String, Action> run = new HashMap<>();
     private FtcDashboard dashboard;
 
@@ -20,34 +21,42 @@ public class TestTeleOp extends LinearOpMode {
     public void runOpMode() {
         dashboard = FtcDashboard.getInstance();
         Robot robot = new Robot(hardwareMap);
+        TelemetryPacket packet = new TelemetryPacket();
+
+        packet.put("Velocity", 0);
+        packet.put("Target Velocity", shooterSpeed);
 
         waitForStart();
 
         while (opModeIsActive()) {
-            TelemetryPacket packet = new TelemetryPacket();
+            //TODO ----- DRIVETRAIN ------
 
-            /**
-             * DRIVETRAIN
-             */
-            run.put("DRIVETRAIN", robot.manualDrive(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x));
+            run.put("DRIVETRAIN", robot.manualDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x));
 
-            /**
-             * TRANSFER
-             */
-            if (gamepad1.left_trigger > 0.15) {
-                run.put("TRANSFER", robot.setTransfer(1.0, 1.0));
-            } else {
-                run.put("TRANSFER", robot.setTransfer(0.0, 0.0));
-            }
+            //TODO ----- SHOOTER -----
 
-            /**
-             * SHOOTER
-             */
             if (gamepad1.right_trigger > 0.15) {
                 run.put("SHOOTER", robot.setShooterMotors(shooterSpeed));
             } else {
-                run.put("SHOOTER", robot.setShooterMotors(0));
+                run.put("SHOOTER", robot.stopShooterMotors());
             }
+
+
+            //TODO ----- TRANSFER -----
+
+            if (gamepad1.left_trigger > 0.15) {
+                run.put("TRANSFER", robot.setTransfer(transferSpeed));
+            } else {
+                run.put("TRANSFER", robot.setTransfer(0.0));
+            }
+
+            //TODO ----- TELEMETRY -----
+
+            packet.put("Velocity", robot.getShooterSpeed());
+            packet.put("Target Velocity", shooterSpeed);
+            dashboard.sendTelemetryPacket(packet);
+            telemetry.update();
+
 
             HashMap<String, Action> newActions = new HashMap<>();
             for (Map.Entry<String, Action> entry : run.entrySet()) {
@@ -56,8 +65,6 @@ public class TestTeleOp extends LinearOpMode {
                 }
             }
             run = newActions;
-            dashboard.sendTelemetryPacket(packet);
-            telemetry.update();
         }
     }
 }

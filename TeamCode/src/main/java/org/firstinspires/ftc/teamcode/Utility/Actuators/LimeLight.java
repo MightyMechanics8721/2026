@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Utility.Actuators;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -17,18 +18,15 @@ import java.util.List;
  * not from the robot's center to the AprilTag.
  */
 public class LimeLight {
-
     private final Limelight3A limelight;
-
     private LLResult latestResult;
     private List<LLResultTypes.FiducialResult> detectedTags =
             Collections.emptyList();
+    private static final double METERS_TO_INCHES = 5000.00/127.00;
 
-    private static final double METERS_TO_INCHES = 39.37007874;
-
-    public LimeLight(Limelight3A limelight, int pipeline) {
-        this.limelight = limelight;
-        setPipeline(pipeline);
+    public LimeLight(HardwareMap hardwareMap) {
+        limelight = hardwareMap.get(Limelight3A.class, "Apr");
+        setPipeline(0);
     }
 
     /**
@@ -56,7 +54,6 @@ public class LimeLight {
         if (latestResult != null
                 && latestResult.isValid()
                 && latestResult.getFiducialResults() != null) {
-
             detectedTags = new ArrayList<>(
                     latestResult.getFiducialResults()
             );
@@ -91,13 +88,6 @@ public class LimeLight {
         }
 
         return ids;
-    }
-
-    /**
-     * Checks whether a particular AprilTag ID is visible.
-     */
-    public boolean isTagVisible(int id) {
-        return getTag(id) != null;
     }
 
     /**
@@ -172,6 +162,20 @@ public class LimeLight {
         }
 
         return tag.getTargetYDegrees();
+    }
+    /**
+     * Updates the internal orientation for MegaTag2 calculations.
+     * Call this in your OpMode loop before calling update() if using IMU fusion.
+     * @param yawDegrees Current robot heading from your IMU in degrees.
+     */
+    public void updateRobotOrientation(double yawDegrees) {
+        limelight.updateRobotOrientation(yawDegrees);
+    }
+    public Pose3D getBotPoseOnField(){
+        if(latestResult != null) {
+            return latestResult.getBotpose();
+        }
+        return null;
     }
 
     /**

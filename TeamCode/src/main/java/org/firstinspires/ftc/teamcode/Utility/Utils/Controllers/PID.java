@@ -12,15 +12,7 @@ public class PID {
     public ElapsedTime timer = new ElapsedTime();
     private PIDConstants pidConstants;
 
-//    public PID(double kP, double kI, double kD, functionType type) {
-//        this.kP = kP;
-//        this.kI = kI;
-//        this.kD = kD;
-//        this.type = type;
-//        eIntegralSum = 0;
-//        eDerivative = 0;
-//        ePrev = 0;
-//    }
+
 
     public PID(PIDConstants pidConstants, functionType type) {
         this.pidConstants = pidConstants;

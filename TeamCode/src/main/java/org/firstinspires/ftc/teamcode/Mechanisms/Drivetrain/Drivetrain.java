@@ -54,11 +54,11 @@ public class Drivetrain {
     public final DcMotorAdvanced motorLeftBack;
     public final DcMotorAdvanced motorRightBack;
     public final DcMotorAdvanced motorRightFront;
-    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.DrivetrainMotorController motorController;
-    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.GeometricController geometricController;
+    private final DrivetrainMotorController motorController;
+    private final GeometricController geometricController;
     private final SimpleMatrix stopMatrix = new SimpleMatrix(4, 1);
-    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.PoseController poseController;
-    private final org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.PoseController followController;
+    private final PoseController poseController;
+    private final PoseController followController;
     private final MecanumKinematicModel mecanumKinematicModel;
     public SimpleMatrix shootWhileMovingPose;
     public SimpleMatrix driftedPose;
@@ -634,7 +634,7 @@ public class Drivetrain {
      */
     public void manualControl(double lx, double ly, double rX) {
         double x = -lx;
-        double y = ly;
+        double y = -ly;
         double rx = -rX;
 
         SimpleMatrix compensatedTwist = new SimpleMatrix(
@@ -649,7 +649,6 @@ public class Drivetrain {
                         }
                 }
         );
-
         double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
         setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist).scale(1 / denominator));
     }
