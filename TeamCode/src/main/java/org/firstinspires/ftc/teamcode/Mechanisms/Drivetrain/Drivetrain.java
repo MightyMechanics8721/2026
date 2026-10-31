@@ -458,7 +458,7 @@ public class Drivetrain {
 
     }
 
-    private boolean followPathFunction(
+    public boolean followPathFunction(
             Path path, double maxSpeed, double distanceThreshold, double angleThreshold
             , boolean useStoppingDistance
     ) {
@@ -529,6 +529,76 @@ public class Drivetrain {
         return true;
     }
 
+
+    private boolean followPathFunction(
+            Path path, double distanceThreshold, double angleThreshold
+    ) {
+        Canvas canvas = this.packet.fieldOverlay();
+
+        Drawing.drawPath(path.getWaypoints(), canvas, "red");
+
+        if (this.inPositionThreshold(path.getFinalPoint(), FOLLOWER_CONSTANTS.headingLookahead)) {
+            //            packet.addLine("follower: pose control");
+
+            SimpleMatrix desiredPose = makePoseVector(
+                    path.getFinalPoint()[0], path.getFinalPoint()[1],
+                    Math.toDegrees(path.finalHeading)
+            );
+
+            boolean isRunning = this.goToPoseFunction(
+                    desiredPose, distanceThreshold, angleThreshold, true
+            );
+
+            if (!isRunning) {
+                this.geometricController.resetLookAhead();
+            }
+
+            return isRunning;
+        }
+
+        double[] position = {state.get(0, 0), state.get(1, 0)};
+        SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+
+        Drawing.drawCircle(position, canvas, FOLLOWER_CONSTANTS.positionLookahead, "purple", false);
+        Drawing.drawCircle(position, canvas, FOLLOWER_CONSTANTS.headingLookahead, "orange", false);
+
+        //        packet.addLine("follower: pure pursuit");
+
+            pose = this.driftedPose;
+            //            packet.addLine("follower: drift used");
+            Drawing.drawRobot(this.driftedPose, canvas, "blue");
+
+
+        // TODO: try with drift pose too
+        SimpleMatrix desiredPose = this.geometricController.calculate(
+                state.extractMatrix(
+                        0,
+                        3,
+                        0,
+                        1
+                ), path
+        );
+        SimpleMatrix wheelSpeeds
+                = mecanumKinematicModel.inverseKinematics(followController.calculate(
+                pose,
+                desiredPose
+        ));
+
+        double maxScale = (9999 / MECHANICAL_PARAMETERS.wheelRadius)
+                / wheelSpeeds.elementMaxAbs();
+
+        wheelSpeeds = wheelSpeeds.scale(maxScale);
+
+        SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
+
+        setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
+
+        double[] desiredPosition = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
+        Drawing.drawPoint(desiredPosition, canvas, "green");
+
+        return true;
+    }
+
     /**
      * @param path
      * @param maxSpeed ~120
@@ -538,33 +608,6 @@ public class Drivetrain {
      *
      * @return
      */
-    public Action followPath(
-            Path path,
-            double maxSpeed,
-            double distanceThreshold,
-            double angleThreshold,
-            boolean useStoppingDistance
-    ) {
-        Drivetrain drivetrain = this;
-        return new Action() {
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                drivetrain.setTelemetry(packet);
-                drivetrain.localize();
-                drivetrain.updateTelemetry();
-
-                return drivetrain.followPathFunction(
-                        path,
-                        maxSpeed,
-                        distanceThreshold,
-                        angleThreshold,
-                        useStoppingDistance
-                );
-            }
-        };
-
-    }
 
     /**
      * @param path
@@ -577,10 +620,11 @@ public class Drivetrain {
      */
     public Action followPathTimed(
             Path path,
-            double maxSpeed,
+            double seconds,
             double distanceThreshold,
             double angleThreshold,
-            boolean useStoppingDistance, double seconds
+            double maxSpeed,
+            boolean useStoppingDistance
     ) {
         Drivetrain drivetrain = this;
         return new Action() {

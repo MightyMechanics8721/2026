@@ -17,5 +17,11 @@ public class Hardstop {
     public void setHardStop(double pos){
         servo.setPosition(pos);
     }
+    public void openHardStop(){
+        servo.setPosition(open);
+    }
+    public void closeHardStop(){
+        servo.setPosition(close);
+    }
 
 }

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes;
+package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -12,8 +12,6 @@ import java.util.Map;
 @TeleOp(name="Testing")
 @Config
 public class TestTeleOp extends LinearOpMode {
-    public static double shooterSpeed = 235;
-    public static double transferSpeed = 0.6  ;
     private Map<String, Action> run = new HashMap<>();
     private FtcDashboard dashboard;
 
@@ -24,7 +22,7 @@ public class TestTeleOp extends LinearOpMode {
         TelemetryPacket packet = new TelemetryPacket();
 
         packet.put("Velocity", 0);
-        packet.put("Target Velocity", shooterSpeed);
+        packet.put("Target Velocity", robot.shooterVelocity);
 
         waitForStart();
 
@@ -36,7 +34,7 @@ public class TestTeleOp extends LinearOpMode {
             //TODO ----- SHOOTER -----
 
             if (gamepad1.right_trigger > 0.15) {
-                run.put("SHOOTER", robot.setShooterMotors(shooterSpeed));
+                run.put("SHOOTER", robot.setShooterMotors(robot.shooterVelocity));
             } else {
                 run.put("SHOOTER", robot.stopShooterMotors());
             }
@@ -45,7 +43,7 @@ public class TestTeleOp extends LinearOpMode {
             //TODO ----- TRANSFER -----
 
             if (gamepad1.left_trigger > 0.15) {
-                run.put("TRANSFER", robot.setTransfer(transferSpeed));
+                run.put("TRANSFER", robot.setTransfer(robot.transferSpeed));
             } else {
                 run.put("TRANSFER", robot.setTransfer(0.0));
             }
@@ -53,7 +51,7 @@ public class TestTeleOp extends LinearOpMode {
             //TODO ----- TELEMETRY -----
 
             packet.put("Velocity", robot.getShooterSpeed());
-            packet.put("Target Velocity", shooterSpeed);
+            packet.put("Target Velocity", robot.shooterVelocity);
             dashboard.sendTelemetryPacket(packet);
             telemetry.update();
 

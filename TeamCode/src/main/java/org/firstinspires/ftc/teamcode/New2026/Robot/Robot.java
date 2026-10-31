@@ -4,9 +4,14 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 import org.firstinspires.ftc.teamcode.Mechanisms.HardStop.Hardstop;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.ShooterMotors;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
@@ -17,8 +22,12 @@ public class Robot {
 
     private final ShooterMotors shooterMotors;
     private final Transfer transfer;
-    private final Drivetrain drivetrain;
+
+    public final Drivetrain drivetrain;
     private final Hardstop hardstop;
+    public final double transferSpeed = 0.7;
+    public final double shootTime = 1;
+    public final double shooterVelocity = 235;
     Battery battery;
     public Robot(HardwareMap hardwareMap) {
         Battery.initialize(hardwareMap);
@@ -42,9 +51,7 @@ public class Robot {
         };
 
     }
-    public Action setTransfer(
-            double p1
-    ) {
+    public Action setTransfer(double p1) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
@@ -52,13 +59,20 @@ public class Robot {
                 return false;
             }
         };
-
+    }
+    public Action stopTransfer(){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            transfer.setTransferPower(0,0);
+                return false;
+            }
+        };
     }
     public Action setShooterMotors( double p){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                hardstop.setHardStop(hardstop.open);
                 shooterMotors.setVelocityShooter(p);
                 return false;
             }
@@ -75,11 +89,20 @@ public class Robot {
         };
     }
 
-    public Action setHardStop(double p){
+    public Action openHardStop(){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                hardstop.setHardStop(p);
+                hardstop.openHardStop();
+                return false;
+            }
+        };
+    }
+    public Action closeHardStop(){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                hardstop.closeHardStop();
                 return false;
             }
         };
@@ -88,5 +111,52 @@ public class Robot {
 
     public double getShooterSpeed(){
         return shooterMotors.getVelocity();
+    }
+
+    // TODO ------ AUTON ------
+
+    public Action intakePathTimed(Path path,
+                                  double seconds,
+                                  double distanceThreshold,
+                                  double angleThreshold,
+                                  double maxSpeed, boolean useStoppingDistance, double intakePower){
+        return new Action() {
+            private ElapsedTime timer = null;
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(timer == null){
+                    timer = new ElapsedTime();
+                }
+                if(timer.seconds() > seconds){
+                    setTransfer(intakePower);
+                    drivetrain.stopMotors();
+                    return false;
+                }
+                setTransfer(intakePower);
+                drivetrain.followPathFunction(path, maxSpeed, distanceThreshold, angleThreshold, useStoppingDistance);
+                return true;
+            }
+        };
+    }
+
+    public SequentialAction shootPath(Path path,
+                                  double seconds,
+                                  double distanceThreshold,
+                                  double angleThreshold,
+                                  double maxSpeed, boolean useStoppingDistance, double shooterVelocity, double shootTime){
+        return new SequentialAction(
+                new ParallelAction(
+                closeHardStop(),
+                drivetrain.followPathTimed(path, seconds, distanceThreshold, angleThreshold, maxSpeed, useStoppingDistance),
+                setShooterMotors(shooterVelocity)),
+                shoot(shootTime),
+                stopShooterMotors());
+    }
+    public SequentialAction shoot(double time){
+       return new SequentialAction(openHardStop(),
+               new SleepAction(0.05),
+               setTransfer(transferSpeed),
+               new SleepAction(time),
+               stopTransfer());
     }
 }

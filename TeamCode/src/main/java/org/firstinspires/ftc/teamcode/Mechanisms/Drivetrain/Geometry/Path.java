@@ -36,12 +36,22 @@ public class Path {
     ) {
         this.waypoints = waypoints;
         //this.motionProfile = motionProfile;
-        this.finalHeading = finalHeading;
+        this.finalHeading = Math.toDegrees(finalHeading);
         this.reverse = reverse;
         this.useStaticHeading = useStaticHeading;
         this.finalPoint = (double[]) Arrays.stream(waypoints).toArray()[waypoints.length - 1];
         // Also, maybe to make it easy to reach, grab the final waypoint and actually set it here.
         // just grab the last element of waypoints and set it here!
+    }
+    public Path(
+            double[][] waypoints,
+            double finalHeading
+    ) {
+        this.waypoints = waypoints;
+        this.finalHeading = Math.toDegrees(finalHeading);
+        this.reverse = false;
+        this.useStaticHeading = false;
+        this.finalPoint = (double[]) Arrays.stream(waypoints).toArray()[waypoints.length - 1];
     }
 
     //    public MotionProfile getMotionProfile() {
